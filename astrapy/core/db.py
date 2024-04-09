@@ -33,6 +33,7 @@ from queue import Queue
 from types import TracebackType
 from typing import (
     Any,
+    Callable,
     cast,
     Dict,
     List,
@@ -411,6 +412,7 @@ class AstraDBCollection:
         request_method: PaginableRequestMethod,
         options: Optional[Dict[str, Any]],
         prefetched: Optional[int] = None,
+        raw_response_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> Generator[API_DOC, None, None]:
         """
         Generate paginated results for a given database query method.
@@ -419,12 +421,17 @@ class AstraDBCollection:
             request_method (function): The database query method to paginate.
             options (dict, optional): Options for the database query.
             prefetched (int, optional): Number of pre-fetched documents.
+            raw_response_callback: an optional callback invoked at each new
+                response coming from the API. The only argument is the raw
+                APi response and the callback must return None.
 
         Yields:
             dict: The next document in the paginated result set.
         """
         _options = options or {}
         response0 = request_method(options=_options)
+        if raw_response_callback:
+            raw_response_callback(response0)
         next_page_state = response0["data"]["nextPageState"]
         options0 = _options
         if next_page_state is not None and prefetched:
@@ -461,6 +468,8 @@ class AstraDBCollection:
             while next_page_state is not None and not prefetched:
                 options1 = {**options0, **{"pageState": next_page_state}}
                 response1 = request_method(options=options1)
+                if raw_response_callback:
+                    raw_response_callback(response1)
                 for document in response1["data"]["documents"]:
                     yield document
                 next_page_state = response1["data"]["nextPageState"]
@@ -473,6 +482,7 @@ class AstraDBCollection:
         options: Optional[Dict[str, Any]] = None,
         prefetched: Optional[int] = None,
         timeout_info: TimeoutInfoWideType = None,
+        raw_response_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> Iterator[API_DOC]:
         """
         Perform a paginated search in the collection.
@@ -489,6 +499,9 @@ class AstraDBCollection:
                 needs more data. This parameter controls a single request.
                 Note that a 'read' timeout event will not block the action taken
                 by the API server if it has received the request already.
+            raw_response_callback: an optional callback invoked at each new
+                response coming from the API. The only argument is the raw
+                APi response and the callback must return None.
 
         Returns:
             generator: A generator yielding documents in the paginated result set.
@@ -504,6 +517,7 @@ class AstraDBCollection:
             request_method=partialed_find,
             options=options,
             prefetched=prefetched,
+            raw_response_callback=raw_response_callback,
         )
 
     def pop(
@@ -1785,6 +1799,7 @@ class AsyncAstraDBCollection:
         options: Optional[Dict[str, Any]],
         prefetched: Optional[int] = None,
         timeout_info: TimeoutInfoWideType = None,
+        raw_response_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> AsyncGenerator[API_DOC, None]:
         """
         Generate paginated results for a given database query method.
@@ -1796,12 +1811,17 @@ class AsyncAstraDBCollection:
             timeout_info: a float, or a TimeoutInfo dict, for the HTTP request.
                 Note that a 'read' timeout event will not block the action taken
                 by the API server if it has received the request already.
+            raw_response_callback: an optional callback invoked at each new
+                response coming from the API. The only argument is the raw
+                APi response and the callback must return None.
 
         Yields:
             dict: The next document in the paginated result set.
         """
         _options = options or {}
         response0 = await request_method(options=_options)
+        if raw_response_callback:
+            raw_response_callback(response0)
         next_page_state = response0["data"]["nextPageState"]
         options0 = _options
         if next_page_state is not None and prefetched:
@@ -1834,6 +1854,8 @@ class AsyncAstraDBCollection:
             while next_page_state is not None:
                 options1 = {**options0, **{"pageState": next_page_state}}
                 response1 = await request_method(options=options1)
+                if raw_response_callback:
+                    raw_response_callback(response1)
                 for document in response1["data"]["documents"]:
                     yield document
                 next_page_state = response1["data"]["nextPageState"]
@@ -1846,6 +1868,7 @@ class AsyncAstraDBCollection:
         options: Optional[Dict[str, Any]] = None,
         prefetched: Optional[int] = None,
         timeout_info: TimeoutInfoWideType = None,
+        raw_response_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
     ) -> AsyncIterator[API_DOC]:
         """
         Perform a paginated search in the collection.
@@ -1862,6 +1885,9 @@ class AsyncAstraDBCollection:
                 needs more data. This parameter controls a single request.
                 Note that a 'read' timeout event will not block the action taken
                 by the API server if it has received the request already.
+            raw_response_callback: an optional callback invoked at each new
+                response coming from the API. The only argument is the raw
+                APi response and the callback must return None.
 
         Returns:
             generator: A generator yielding documents in the paginated result set.
@@ -1877,6 +1903,7 @@ class AsyncAstraDBCollection:
             request_method=partialed_find,
             options=options,
             prefetched=prefetched,
+            raw_response_callback=raw_response_callback,
         )
 
     async def pop(
