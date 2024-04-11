@@ -83,7 +83,7 @@ Next steps:
 AstraPy's abstractions for working at the data and admin layers are structured
 as depicted by this diagram:
 
-![AstraPy, abstractions chart](https://gist.github.com/assets/14221764/96ce16e1-4336-4b11-95d1-32690d67e859)
+![AstraPy, abstractions chart](https://github.com/datastax/astrapy/raw/main/pictures/astrapy_abstractions.png?raw=true)
 
 Here's a small admin-oriented example:
 
@@ -109,7 +109,7 @@ my_database_admin.create_namespace("my_dreamspace")
 
 The package comes with its own set of exceptions, arranged in this hierarchy:
 
-![AstraPy, exception hierarchy](https://gist.github.com/assets/14221764/233d9563-61e6-4db4-9964-9af0808fa300)
+![AstraPy, exception hierarchy](https://github.com/datastax/astrapy/raw/main/pictures/astrapy_exceptions.png?raw=true)
 
 For more information, and code examples, check out the docstrings and consult
 the API reference linked above.
@@ -199,7 +199,7 @@ naming convention and module structure).
 
 ### Running tests
 
-Full testing requires environment variables:
+"Full regular" testing requires environment variables:
 
 ```bash
 export ASTRA_DB_APPLICATION_TOKEN="AstraCS:..."
@@ -213,8 +213,6 @@ export ASTRA_DB_SECONDARY_KEYSPACE="..."
 Tests can be started in various ways:
 
 ```bash
-# test the core modules
-poetry run pytest tests/core
 # test the "idiomatic" layer
 poetry run pytest tests/idiomatic
 poetry run pytest tests/idiomatic/unit
@@ -222,11 +220,24 @@ poetry run pytest tests/idiomatic/integration
 
 # remove logging noise:
 poetry run pytest [...] -o log_cli=0
+```
+
+The above runs the regular testing (i.e. non-Admin, non-core).
+The (idiomatic) Admin part is tested manually by you, on Astra accounts with room
+for up to 3 new databases, possibly both on prod and dev, and uses specific env vars,
+as can be seen on `tests/idiomatic/integration/test_admin.py`.
+
+Should you be interested in testing the "core" modules, moreover,
+this is also something for you to run manually (do that if you touch "core"):
+
+```bash
+# test the core modules
+poetry run pytest tests/core
 
 # do not drop collections:
 TEST_SKIP_COLLECTION_DELETE=1 poetry run pytest [...]
 
-# include astrapy.core.ops testing (must cleanup after that):
+# include astrapy.core.ops testing (tester must clean up after that):
 TEST_ASTRADBOPS=1 poetry run pytest [...]
 ```
 
